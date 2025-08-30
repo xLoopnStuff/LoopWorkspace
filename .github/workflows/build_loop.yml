@@ -285,6 +285,13 @@ jobs:
           # Several patches may be added per submodule.
           # Adding comments (#) may be useful to easily tell the individual patches apart.
 
+      # Apply Loop and Learn customization: Food Search (MÅ være sist av customizations)
+      - name: Apply Loop and Learn Customizations (Food Search)
+        run: |
+          export SCRIPT_BRANCH=prelim_ai_food
+          export PATCH_BRANCH=prelim_ai_food
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/loopandlearn/lnl-scripts/$SCRIPT_BRANCH/CustomizationSelect.sh)" food_search
+
       # Patch Fastlane Match to not print tables
       - name: Patch Match Tables
         run: |
