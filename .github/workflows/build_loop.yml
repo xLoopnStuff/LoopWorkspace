@@ -282,8 +282,8 @@ jobs:
           export PATCH_BRANCH=main
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/loopandlearn/lnl-scripts/$SCRIPT_BRANCH/CustomizationSelect.sh)" \
           dexcom_upload_readings \
-          therapy_settings \
-          profile_upload
+          therapy_defaults \
+          profiles
 
       # Apply Loop and Learn customization: Food Search (MÅ være sist av customizations)
       - name: Apply Loop and Learn Customizations (Food Search)
