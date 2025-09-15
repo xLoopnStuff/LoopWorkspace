@@ -273,6 +273,16 @@ jobs:
           # Remove the "#" sign from the beginning of the line below to activate:
           #curl https://github.com/loopnlearn/Loop/commit/d206432b024279ef710df462b20bd464cd9682d4.patch | git apply --directory=Loop -v --whitespace=fix
 
+          # Loop and Learn patches
+          # Always upload Dexcom readings
+          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/change-default-upload-dexcom-readings.patch | git apply --directory=Loop -v --whitespace=fix
+
+          # Therapy settings defaults
+          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/change-default-therapy-settings.patch | git apply --directory=Loop -v --whitespace=fix
+
+          # Upload profile to Nightscout on build
+          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/upload-profile-to-nightscout.patch | git apply --directory=Loop -v --whitespace=fix
+
           # Submodule LoopKit patches:
           # General template for customizing submodule LoopKit 
           # Copy url from a GitHub commit or pull request and insert below, and remove the "#" sign from the beginning of the line to activate:
