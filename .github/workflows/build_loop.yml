@@ -262,33 +262,19 @@ jobs:
       - name: Customize Loop
         run: |
 
+          # LoopWorkspace patches
+          # (deaktivert – ingen lokale patcher i ./patches)
+          # if $(ls ./patches/* &> /dev/null); then
+          #   git apply ./patches/* --allow-empty -v --whitespace=fix
+          # fi
 
-          # Submodule Loop patches:
-          # Template for customizing submodule Loop (changes Loop app name to "CustomLoop")
-          # Remove the "#" sign from the beginning of the line below to activate:
+          # Submodule Loop patches (template – deaktivert)
           #curl https://github.com/loopnlearn/Loop/commit/d206432b024279ef710df462b20bd464cd9682d4.patch | git apply --directory=Loop -v --whitespace=fix
 
-          # Loop and Learn patches
-          # Always upload Dexcom readings
-          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/change-default-upload-dexcom-readings.patch | git apply --directory=Loop -v --whitespace=fix
-
-          # Therapy settings defaults
-          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/change-default-therapy-settings.patch | git apply --directory=Loop -v --whitespace=fix
-
-          # Upload profile to Nightscout on build
-          curl https://raw.githubusercontent.com/loopnlearn/Loop/patches/upload-profile-to-nightscout.patch | git apply --directory=Loop -v --whitespace=fix
-
-          # Submodule LoopKit patches:
-          # General template for customizing submodule LoopKit 
-          # Copy url from a GitHub commit or pull request and insert below, and remove the "#" sign from the beginning of the line to activate:
+          # Submodule LoopKit patches (template – deaktivert)
           #curl url_to_github_commit.patch | git apply --directory=LoopKit -v --whitespace=fix
 
-          # Submodule xxxxx patches:
-
-          # Add patches for customization of additional submodules by following the templates above, 
-          # and make sure to specify the submodule by setting "--directory=(submodule_name)".
-          # Several patches may be added per submodule.
-          # Adding comments (#) may be useful to easily tell the individual patches apart.
+          # Submodule xxxxx patches (template – deaktivert)
 
       # Apply Loop and Learn Customizations (Dexcom Upload + Therapy Settings + Profile Upload)
       - name: Apply Loop and Learn Customizations (Dexcom + Therapy + Profile)
