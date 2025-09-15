@@ -276,14 +276,12 @@ jobs:
 
           # Submodule xxxxx patches (template – deaktivert)
 
-      - name: Apply Loop and Learn Customizations (Dexcom + Therapy + Profile)
+      - name: Apply Loop and Learn Customizations (Dexcom Upload Readings)
         run: |
           export SCRIPT_BRANCH=main
           export PATCH_BRANCH=main
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/loopandlearn/lnl-scripts/$SCRIPT_BRANCH/CustomizationSelect.sh)" \
-          dexcom_upload_readings \
-          therapy_defaults \
-          profiles
+          dexcom_upload_readings
 
       # Apply Loop and Learn customization: Food Search (MÅ være sist av customizations)
       - name: Apply Loop and Learn Customizations (Food Search)
