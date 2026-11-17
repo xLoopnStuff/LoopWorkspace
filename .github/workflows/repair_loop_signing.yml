@@ -1,0 +1,77 @@
+name: Repair Loop Signing (one-time)
+run-name: Repair Loop Signing (${{ github.ref_name }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type REPAIR to confirm replacing only the stored Loop signing assets'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repair-loop-signing
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: ${{ inputs.confirm == 'REPAIR' }}
+    runs-on: macos-26-intel
+    env:
+      TEAMID: ${{ secrets.TEAMID }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+      GH_TOKEN: ${{ secrets.GH_PAT }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_READONLY: 'false'
+      FASTLANE_KEY_ID: ${{ secrets.FASTLANE_KEY_ID }}
+      FASTLANE_ISSUER_ID: ${{ secrets.FASTLANE_ISSUER_ID }}
+      FASTLANE_KEY: ${{ secrets.FASTLANE_KEY }}
+      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+    steps:
+      - name: Checkout LoopWorkspace
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Remove stale assets from Match-Secrets only (not Apple)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GH_PAT"
+          test -n "$MATCH_PASSWORD"
+          AUTH="$(printf '%s:%s' "$GITHUB_REPOSITORY_OWNER" "$GH_PAT" | base64 | tr -d '\n')"
+          git -c "http.extraheader=AUTHORIZATION: basic $AUTH" clone --branch master \
+            "https://github.com/${GITHUB_REPOSITORY_OWNER}/Match-Secrets.git" /tmp/loop-match-repair
+          cd /tmp/loop-match-repair
+          test -f certs/distribution/FD326QLMCV.cer
+          test -f certs/distribution/FD326QLMCV.p12
+          # Abort if this repo has any other certificate pair; do not touch it.
+          if [ "$(find certs/distribution -type f | wc -l | tr -d ' ')" != 2 ]; then
+            echo 'Unexpected distribution certificate files; aborting without changes.'
+            exit 1
+          fi
+          git rm -- certs/distribution/FD326QLMCV.cer certs/distribution/FD326QLMCV.p12
+          # These profiles belong to Loop's dedicated Match-Secrets repo.
+          if [ -d profiles/appstore ]; then
+            git rm -r -- profiles/appstore
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m 'Remove stale Loop Match signing assets for safe regeneration'
+          git -c "http.extraheader=AUTHORIZATION: basic $AUTH" push origin HEAD:master
+          echo 'Stored stale Loop assets removed. No Apple certificates were revoked.'
+
+      - name: Generate new Loop certificate and provisioning profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle exec fastlane certs
+
+      - name: Verify newly stored Loop signing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle exec fastlane check_and_renew_certificates
