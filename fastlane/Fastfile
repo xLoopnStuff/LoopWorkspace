@@ -311,6 +311,29 @@ platform :ios do
       end
     end
 
+    # Verify that the actual signing assets in Match-Secrets are usable.
+    # A valid certificate on Apple's portal alone does not prove that Match
+    # contains the matching certificate/private key and provisioning profiles.
+    # Fail safely rather than automatically revoking unrelated certificates.
+    begin
+      match(
+        type: "appstore",
+        readonly: true,
+        git_basic_authorization: Base64.strict_encode64("#{GITHUB_REPOSITORY_OWNER}:#{GH_PAT}"),
+        app_identifier: [
+          "com.#{TEAMID}.loopkit.Loop",
+          "com.#{TEAMID}.loopkit.Loop.statuswidget",
+          "com.#{TEAMID}.loopkit.Loop.LoopWatch.watchkitextension",
+          "com.#{TEAMID}.loopkit.Loop.LoopWatch",
+          "com.#{TEAMID}.loopkit.Loop.Loop-Intent-Extension",
+          "com.#{TEAMID}.loopkit.Loop.LoopWidgetExtension"
+        ]
+      )
+    rescue StandardError => e
+      UI.user_error!("Match-Secrets signing assets failed validation: #{e.message}. " \
+        "Do not enable FORCE_NUKE_CERTS; repair or replace the stored signing assets first.")
+    end
+
     # Write result to new_certificate_needed.txt
     file_path = File.expand_path('new_certificate_needed.txt')
     File.write(file_path, new_certificate_needed ? 'true' : 'false')  
