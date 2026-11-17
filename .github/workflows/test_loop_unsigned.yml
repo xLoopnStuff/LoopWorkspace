@@ -1,0 +1,55 @@
+name: Test Loop 3.14.13 (unsigned, no TestFlight)
+run-name: Test compile (${{ github.ref_name }})
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    name: Compile without signing
+    runs-on: macos-26-intel
+    timeout-minutes: 90
+    steps:
+      - name: Show Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+
+      - name: Checkout exact branch and submodules
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Verify release version
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '^LOOP_MARKETING_VERSION = 3.14.13$' VersionOverride.xcconfig
+          git submodule status
+          git status --short
+
+      - name: Resolve Swift packages and compile without signing
+        shell: bash
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -workspace LoopWorkspace.xcworkspace \
+            -scheme LoopWorkspace \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/LoopTestDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            2>&1 | tee "$RUNNER_TEMP/loop-test-build.log"
+
+      - name: Upload compile log only
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: loop-unsigned-compile-log
+          path: ${{ runner.temp }}/loop-test-build.log
+          if-no-files-found: ignore
